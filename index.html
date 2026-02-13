@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Recognition Attendance System</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Login/Register Section -->
+        <div id="authSection" class="section active">
+            <div class="auth-container">
+                <div class="logo">
+                    <h1>📸 Attendance System</h1>
+                    <p>Face Recognition Based Smart Attendance</p>
+                </div>
+
+                <div class="tabs">
+                    <button class="tab active" onclick="switchTab('login')">Login</button>
+                    <button class="tab" onclick="switchTab('register')">Register</button>
+                </div>
+
+                <!-- Login Form -->
+                <div id="loginForm" class="form-container active">
+                    <h2>Welcome Back</h2>
+                    <form onsubmit="handleLogin(event)">
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" id="loginEmail" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Password</label>
+                            <input type="password" id="loginPassword" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Login</button>
+                    </form>
+                </div>
+
+                <!-- Register Form -->
+                <div id="registerForm" class="form-container">
+                    <h2>Create Account</h2>
+                    <div class="role-selector">
+                        <button class="role-btn active" onclick="selectRole('student')">Student</button>
+                        <button class="role-btn" onclick="selectRole('teacher')">Teacher</button>
+                    </div>
+
+                    <form onsubmit="handleRegister(event)" id="regForm">
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" id="regEmail" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Password</label>
+                            <input type="password" id="regPassword" required>
+                        </div>
+
+                        <!-- Student Fields -->
+                        <div id="studentFields">
+                            <div class="form-group">
+                                <label>Full Name</label>
+                                <input type="text" id="studentName">
+                            </div>
+                            <div class="form-group">
+                                <label>Roll Number</label>
+                                <input type="text" id="rollNumber">
+                            </div>
+                            <div class="form-group">
+                                <label>Course</label>
+                                <input type="text" id="course" placeholder="e.g., B.Tech">
+                            </div>
+                            <div class="form-group">
+                                <label>Branch</label>
+                                <input type="text" id="branch" placeholder="e.g., CSE">
+                            </div>
+                            <div class="form-group">
+                                <label>Batch</label>
+                                <input type="text" id="batch" placeholder="e.g., 2021-2025">
+                            </div>
+                            <div class="form-group">
+                                <label>Enroll in Subjects (hold Ctrl to select multiple)</label>
+                                <select id="regSubjects" multiple style="min-height: 80px;"></select>
+                            </div>
+                        </div>
+
+                        <!-- Teacher Fields -->
+                        <div id="teacherFields" style="display: none;">
+                            <div class="form-group">
+                                <label>Full Name</label>
+                                <input type="text" id="teacherName">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Register</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Student Dashboard -->
+        <div id="studentDashboard" class="section">
+            <div class="dashboard">
+                <div class="header">
+                    <h1>Student Dashboard</h1>
+                    <div class="user-info">
+                        <span id="studentNameDisplay"></span>
+                        <button onclick="logout()" class="btn btn-secondary">Logout</button>
+                    </div>
+                </div>
+
+                <div class="dashboard-content">
+                    <!-- Face Registration Card -->
+                    <div class="card">
+                        <h2>🎭 Face Registration</h2>
+                        <div id="faceStatus"></div>
+                        <div id="cameraSection">
+                            <video id="studentVideo" autoplay playsinline></video>
+                            <canvas id="studentCanvas" style="display: none;"></canvas>
+                            <div class="camera-controls">
+                                <button onclick="startCamera('student')" class="btn btn-primary">Start Camera</button>
+                                <button onclick="captureFrames()" class="btn btn-success" id="captureBtn"
+                                    disabled>Capture Faces</button>
+                                <button onclick="stopCamera('student')" class="btn btn-secondary">Stop Camera</button>
+                            </div>
+                            <div id="capturePreview" class="preview-grid"></div>
+                        </div>
+                    </div>
+
+                    <!-- Subject Enrollment Card -->
+                    <div class="card">
+                        <h2>📚 Subject Enrollment</h2>
+                        <div id="mySubjects"></div>
+                        <div class="form-group" style="margin-top: 15px;">
+                            <label>Enroll in Additional Subjects</label>
+                            <select id="dashboardSubjects" multiple style="min-height: 80px;"></select>
+                        </div>
+                        <button onclick="enrollInSubjects()" class="btn btn-primary"
+                            style="margin-top: 10px;">Enroll</button>
+                    </div>
+
+                    <!-- Attendance Stats -->
+                    <div class="card">
+                        <h2>📊 My Attendance</h2>
+                        <div id="attendanceStats"></div>
+                    </div>
+
+                    <!-- Recent Attendance -->
+                    <div class="card">
+                        <h2>📅 Recent Records</h2>
+                        <div id="recentAttendance"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Teacher Dashboard -->
+        <div id="teacherDashboard" class="section">
+            <div class="dashboard">
+                <div class="header">
+                    <h1>Teacher Dashboard</h1>
+                    <div class="user-info">
+                        <span id="teacherNameDisplay"></span>
+                        <button onclick="logout()" class="btn btn-secondary">Logout</button>
+                    </div>
+                </div>
+
+                <div class="dashboard-content">
+                    <!-- Create Subject -->
+                    <div class="card">
+                        <h2>➕ Create Subject</h2>
+                        <form onsubmit="createSubject(event)">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Subject Name</label>
+                                    <input type="text" id="subjectName" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Subject Code</label>
+                                    <input type="text" id="subjectCode" required>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Course</label>
+                                    <input type="text" id="subCourse" placeholder="e.g., B.Tech" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Branch</label>
+                                    <input type="text" id="subBranch" placeholder="e.g., CSE" required>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Create Subject</button>
+                        </form>
+                    </div>
+
+                    <!-- Mark Attendance -->
+                    <div class="card">
+                        <h2>✅ Mark Attendance</h2>
+                        <div class="form-group">
+                            <label>Select Subject</label>
+                            <select id="subjectSelect" onchange="loadSubjectStudents()">
+                                <option value="">-- Select Subject --</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Date</label>
+                            <input type="date" id="attendanceDate" value="">
+                        </div>
+
+                        <div id="markingSection" style="display: none;">
+                            <video id="teacherVideo" autoplay playsinline></video>
+                            <canvas id="teacherCanvas" style="display: none;"></canvas>
+                            <div class="camera-controls">
+                                <button onclick="startCamera('teacher')" class="btn btn-primary">Start Camera</button>
+                                <button onclick="captureForAttendance()" class="btn btn-success" id="markAttendanceBtn"
+                                    disabled>Capture & Mark</button>
+                                <button onclick="stopCamera('teacher')" class="btn btn-secondary">Stop Camera</button>
+                            </div>
+
+                            <div style="text-align: center; margin: 20px 0; position: relative;">
+                                <span
+                                    style="background: var(--card-bg); padding: 0 10px; color: var(--text-secondary);">OR</span>
+                            </div>
+
+                            <div class="upload-section"
+                                style="text-align: center; padding: 20px; border: 2px dashed var(--border-color); border-radius: 8px;">
+                                <input type="file" id="classroomUpload" multiple accept="image/*" style="display: none;"
+                                    onchange="handleClassroomUpload(event)">
+                                <button onclick="document.getElementById('classroomUpload').click()"
+                                    class="btn btn-secondary">
+                                    📁 Upload Classroom Photos
+                                </button>
+                                <p id="uploadStatus"
+                                    style="margin-top: 10px; font-size: 0.9rem; color: var(--text-secondary);"></p>
+                            </div>
+
+                            <div id="attendanceResult"></div>
+                            <div id="detectionOverlay" class="detection-overlay"></div>
+                        </div>
+
+                        <div id="enrolledStudents"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification" class="notification"></div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
